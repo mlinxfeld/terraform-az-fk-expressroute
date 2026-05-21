@@ -38,7 +38,7 @@ Those resources should be composed from separate reusable modules.
 
 ```hcl
 module "expressroute" {
-  source = "git::https://github.com/mlinxfeld/terraform-az-fk-expressroute.git?ref=main"
+  source = "git::https://github.com/mlinxfeld/terraform-az-fk-expressroute.git?ref=v0.1.0"
 
   name                = "er-fk-demo"
   location            = "westeurope"
