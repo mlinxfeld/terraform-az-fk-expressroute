@@ -1,27 +1,29 @@
 # terraform-az-fk-expressroute
 
-This repository contains a reusable **Terraform / OpenTofu module** for deploying an **Azure ExpressRoute circuit** and, when explicitly enabled, the **Virtual Network Gateway connection** that binds the circuit to an Azure VNet gateway.
+This repository contains a reusable **Terraform/OpenTofu module** for deploying **Azure ExpressRoute connectivity primitives** such as **ExpressRoute circuits** and optional **Virtual Network Gateway connections**.
+
+It is part of the **[FoggyKitchen.com training ecosystem](https://foggykitchen.com/courses-2/)** and serves as the Azure private interconnect edge building block for hybrid and multicloud connectivity patterns.
 
 ---
 
-## Purpose
+## 🎯 Purpose
 
-The module is designed for composable Azure connectivity patterns where:
+The goal of this module is to provide a **clean, composable, and educational reference implementation** for Azure ExpressRoute edge connectivity:
 
-- the ExpressRoute circuit lifecycle is managed separately from the VNet gateway
-- the final gateway connection may need to be delayed until the remote side is operational
-- the consuming stack owns the surrounding VNet, GatewaySubnet, and VNG resources
+- Focused on **ExpressRoute circuit and gateway connection resources**
+- No hidden VNet, GatewaySubnet, or Virtual Network Gateway creation
+- Designed to be composed with **terraform-az-fk-vng** and cloud-specific private connectivity modules
 
-This makes it a natural fit for staged OCI FastConnect interconnect deployments.
+This is **not** a full landing zone replacement. It is a **connectivity edge module** intended for learning, reuse, and composition.
 
 ---
 
-## What the module does
+## ✨ What the module does
 
 The module creates:
 
-- one `azurerm_express_route_circuit`
-- optional `azurerm_virtual_network_gateway_connection`
+- Azure ExpressRoute circuit
+- Optional Azure Virtual Network Gateway connection
 
 The module intentionally does **not** create:
 
@@ -29,16 +31,31 @@ The module intentionally does **not** create:
 - Virtual Networks
 - Gateway subnets
 - Virtual Network Gateways
+- Public IPs
 
-Those resources should be composed from separate reusable modules.
+Each of those concerns belongs in its own dedicated module or composition layer.
 
 ---
 
-## Example Usage
+## 📂 Repository Structure
+
+```bash
+terraform-az-fk-expressroute/
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── versions.tf
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 🚀 Example Usage
 
 ```hcl
 module "expressroute" {
-  source = "git::https://github.com/mlinxfeld/terraform-az-fk-expressroute.git?ref=v0.1.0"
+  source = "git::https://github.com/mlinxfeld/terraform-az-fk-expressroute.git?ref=v0.1.1"
 
   name                = "er-fk-demo"
   location            = "westeurope"
@@ -58,22 +75,29 @@ Enable the connection only after the remote provider side is ready, then apply a
 
 ---
 
-## Inputs
+## ⚙️ Module Inputs
 
-| Variable | Required | Description |
-|------|------|-------------|
-| `name` | ✅ | ExpressRoute circuit name |
-| `resource_group_name` | ✅ | Resource group name |
-| `location` | ✅ | Azure region |
-| `service_provider_name` | ❌ | Service provider name |
-| `peering_location` | ✅ | ExpressRoute peering location |
-| `bandwidth_in_mbps` | ✅ | Circuit bandwidth |
-| `sku` | ❌ | SKU object with `tier` and `family` |
-| `allow_classic_operations` | ❌ | Allow classic operations |
-| `gateway_connection` | ❌ | Optional staged VNG connection object |
-| `tags` | ❌ | Resource tags |
+### Core inputs
 
-### Gateway connection schema
+| Variable | Type | Required | Description |
+|--------|------|----------|-------------|
+| `name` | `string` | ✅ | ExpressRoute circuit name |
+| `resource_group_name` | `string` | ✅ | Resource group name |
+| `location` | `string` | ✅ | Azure region |
+| `service_provider_name` | `string` | ❌ | ExpressRoute service provider name |
+| `peering_location` | `string` | ✅ | ExpressRoute peering location |
+| `bandwidth_in_mbps` | `number` | ✅ | Provisioned circuit bandwidth in Mbps |
+| `sku` | `object` | ❌ | ExpressRoute SKU definition |
+| `allow_classic_operations` | `bool` | ❌ | Whether classic operations are allowed on the circuit |
+| `tags` | `map(string)` | ❌ | Resource tags |
+
+### Gateway connection objects
+
+| Variable | Type | Required | Description |
+|--------|------|----------|-------------|
+| `gateway_connection` | `object` | ❌ | Optional Virtual Network Gateway connection object created only when enabled |
+
+### Gateway connection object schema
 
 ```hcl
 gateway_connection = object({
@@ -88,7 +112,7 @@ gateway_connection = object({
 
 ---
 
-## Outputs
+## 📤 Outputs
 
 | Output | Description |
 |------|-------------|
@@ -100,6 +124,37 @@ gateway_connection = object({
 
 ---
 
-## License
+## 🧠 Design Philosophy
 
-Licensed under the **Universal Permissive License (UPL), Version 1.0**.
+- Explicit over implicit
+- Small modules over monoliths
+- Azure Virtual Network Gateway separated from ExpressRoute edge configuration
+- Optimized for **learning, reuse, and composition**
+
+This makes the module useful for:
+
+- Azure-to-OCI private interconnect
+- Azure partner connectivity foundations
+- Multicloud private networking labs
+- Progressive connectivity building blocks
+
+---
+
+## 📌 Notes
+
+- This module focuses on Azure ExpressRoute edge primitives rather than full topologies
+- Azure gateway creation should remain modeled in **terraform-az-fk-vng**
+- The consuming stack should own staged orchestration when partner readiness matters
+
+---
+
+## 🌐 Learn More
+
+Visit [FoggyKitchen.com](https://foggykitchen.com/) for Azure, multicloud, and Terraform/OpenTofu learning resources.
+
+---
+
+## 🪪 License
+
+Licensed under the **Universal Permissive License (UPL), Version 1.0**.  
+See [LICENSE](LICENSE) for details.
